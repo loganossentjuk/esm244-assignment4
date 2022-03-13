@@ -1,0 +1,154 @@
+---
+title: "Untitled"
+author: "Logan Ossentjuk"
+date: "3/12/2022"
+output: 
+  html_document: 
+    code_folding: hide
+    theme: flatly
+---
+
+
+
+# Overview 
+
+```{r setup, include=TRUE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(here)
+library(lubridate)
+library(janitor)
+library(tsibble)
+library(feasts)
+library(slider)
+library(patchwork)
+```
+
+```{r}
+### Data Wrangling 
+willamette_fish <- read_csv(here('data', 'willamette_fish_passage.csv')) %>% 
+  clean_names() 
+  
+fish_sub <- willamette_fish %>% 
+  mutate(date = mdy(date)) %>%
+  as_tsibble(key = NULL, index = date)  %>% 
+  select(date, steelhead, coho, jack_coho, ) %>% 
+  replace_na(list(steelhead = 0, coho = 0, jack_coho = 0))
+  
+fish_ts <- fish_sub %>% 
+  pivot_longer(cols = c(steelhead, coho, jack_coho),
+               names_to = 'species',
+               values_to = 'count') %>%
+  mutate(species = case_when(
+    species == 'coho' ~ 'Coho',
+    species == 'jack_coho' ~ 'Jack Coho',
+    species == 'steelhead' ~ 'Steelhead'))
+```
+
+# Findings {.tabset .tabset-fade}
+
+## Fish Passage Time Series
+```{r fig.align='center'}
+#Visualization 
+coho_ts <- ggplot(data = fish_sub, aes(x = date, y = coho)) +
+  geom_line(color = 'darkslategrey') +
+  theme_classic() +
+  labs(y = "Coho",
+       x= "Date")
+jack_coho_ts <-ggplot(data = fish_sub, aes(x = date, y = jack_coho)) +
+  geom_line(color = 'lightgoldenrod4') +
+  theme_classic() +
+  labs(y = "Jack Coho",
+       x= "Date")
+steelhead_ts <- ggplot(data = fish_sub, aes(x = date, y = steelhead)) +
+  geom_line(color = 'deeppink4') +
+  theme_classic() +
+  labs(y = "Steelhead",
+       x= "Date")
+
+coho_ts/jack_coho_ts/steelhead_ts
+```
+
+### Conclusions:  
+
+
+## Seasonplots
+```{r fig.align='center'}
+fish_per_month <- fish_ts %>% 
+  index_by(month = ~yearmonth(.)) %>% 
+  group_by(species) %>% 
+  summarize(monthly_sum = sum(count, na.rm = TRUE)) %>% 
+  mutate(year = year(month))
+
+fish_per_month %>% 
+  gg_season(y = monthly_sum) +
+  theme_light() +
+  labs(x = "Month",
+       y = "Fish Passages",
+       color="Year") 
+
+```
+
+### Conclusions: 
+
+## Annual Counts By Species: 
+
+```{r}
+fish_annual <- fish_ts %>% 
+  index_by(year = ~year(.)) %>% 
+  group_by(species) %>% 
+  summarize(annual_counts = sum(count))
+
+steelhead_annual <- fish_annual %>%
+  filter(species %in% c("Steelhead"))
+
+coho_annual <- fish_annual %>%
+  filter(species %in% c("Coho"))
+
+jack_coho <- fish_annual %>%
+  filter(species %in% c("Jack Coho"))
+
+steelhead <- ggplot(data = steelhead_annual, aes(x = year, y = annual_counts)) +
+  geom_line(color = 'deeppink4') +
+  theme_light() +
+  labs(x = "Year",
+       y = "Annual Counts",
+       title = "Steelhead") +
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+    scale_x_continuous(n.breaks = 8)
+
+coho <- ggplot(data = coho_annual, aes(x = year, y = annual_counts)) +
+  geom_line(color = 'darkslategrey') +
+  theme_light() +
+  labs(x = "Year",
+       y = "Annual Counts",
+       title = "Coho") +
+ theme(axis.text.x = element_text(angle=45, hjust=1)) +
+    scale_x_continuous(n.breaks = 8)
+
+jack_coho <- ggplot(data = jack_coho, aes(x = year, y = annual_counts)) +
+  geom_line(color = 'lightgoldenrod4') +
+  theme_light() +
+  labs(x = "Year",
+       y = "Annual Counts",
+       title = "Jack Coho") +
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+    scale_x_continuous(n.breaks = 8)
+
+ p4 <- ggplot(data = fish_annual, 
+       aes(x = year, y = annual_counts, color = species)) +  
+  geom_line() +
+  theme_light() +
+  scale_x_continuous(n.breaks = 8) +
+  theme(legend.title = element_blank(),
+        axis.text.x = element_text(angle=45, hjust=1),
+        legend.position = 'NULL') +
+  scale_color_manual(values = c("darkslategrey", "lightgoldenrod4", "deeppink4")) +  
+   #"darkslategrey", "lightgoldenrod4", "deeppink4"
+  labs(x = "Year", y = "Annual Counts")
+ 
+ (steelhead+coho+jack_coho)/p4
+
+```
+
+### Conclusions:

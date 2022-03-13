@@ -5,7 +5,16 @@ output:
   html_document:
     code_folding: hide
 ---
+## Overview 
+This report visualizes the occurrence of oil spills within the California in 2008. Data provided by the Office of Spill Prevention and Response (OSPR) Incident Tracking Database. An interactive map is created to illustrate each individual occurrence with counties marked for orientation. The inland occurrences are then mapped onto a choropath map that demonstrates the relative frequency of occurrence by county, demarcated by a color gradient ranging from grey (low occurrence)  to brown (high occurrence). 
 
+**Data Citation:** 
+
+Lampinen and Conway (2020) Oil Spill Incident Tracking [ds394] GIS Dataset.  https://map.dfg.ca.gov/metadata/ds0394.html#ID0EUGA
+
+Oil Spill Incident Tracking [ds394] | Oil Spill Incident Tracking [ds394] | California State Geoportal. (2020).  https://gis.data.ca.gov/datasets/7464e3d6f4924b50ad06e5a553d71086_0/explore?location=36.977441%2C-119.422009%2C6.43&showTable=true
+
+### Setup
 ```{r setup, include=TRUE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
@@ -17,14 +26,6 @@ library(sf)
 library(tmaptools)
 ```
 
-## Overview 
-This report visualizes the occurrence of oil spills within the California in 2008. Data provided by the Office of Spill Prevention and Response (OSPR) Incident Tracking Database. An interactive map is created to illustrate each individual occurrence with counties marked for orientation. The inland occurrences are then mapped onto a choropath map that demonstrates the relative frequency of occurrence by county, demarcated by a color gradient ranging from grey (low occurrence)  to brown (high occurrence). 
-
-**Data Citation:** 
-
-Lampinen and Conway (2020) Oil Spill Incident Tracking [ds394] GIS Dataset.  https://map.dfg.ca.gov/metadata/ds0394.html#ID0EUGA
-
-Oil Spill Incident Tracking [ds394] | Oil Spill Incident Tracking [ds394] | California State Geoportal. (2020).  https://gis.data.ca.gov/datasets/7464e3d6f4924b50ad06e5a553d71086_0/explore?location=36.977441%2C-119.422009%2C6.43&showTable=true
 
 ### Data Read In
 ```{r}
