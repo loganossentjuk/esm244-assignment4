@@ -1,0 +1,77 @@
+---
+title: "Assignment 4 Task 1"
+author: "Logan Ossentjuk"
+date: "3/6/2022"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=TRUE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(janitor)
+library(here)
+library(tmap)
+library(sf)
+library(tmaptools)
+```
+
+## Overview 
+
+**Data Citation:** Lampinen, Mark (2009). Oil Spill Incident Tracking [ds394]. California Department of Fish and Game, Office of Spill Prevention and Response.
+https://map.dfg.ca.gov/metadata/ds0394.html?5.108.39
+
+### Data Read In
+```{r}
+oil_spill <- read_sf(here('data', 'Oil_Spill_Incident_Tracking_[ds394]', 'Oil_Spill_Incident_Tracking_[ds394].shp')) %>%
+  clean_names()
+
+ca_counties <- read_sf(here('data', 'ca_counties', 'CA_Counties_TIGER2016.shp')) %>% 
+  clean_names() %>% 
+  select(name)
+
+oil_crs <- oil_spill %>% 
+  st_transform(3857) 
+```
+
+### Map of Oil Spill Occurances
+```{r}
+tmap_mode("view") #makes tmap interactive
+tm_shape(ca_counties) +
+  tm_polygons(col = "grey40", alpha = 0.5) +
+  tm_borders() +
+  tm_shape(oil_spill) +
+  tm_dots(col = "tomato4") +
+  tm_basemap("OpenStreetMap")
+```
+
+*Figure 1.* FAOIHGEOUHAGOEHAOGHE
+
+## Oils Spill Occurance Per County
+
+```{r}
+#Making dataset for crs transformed oil and counties data 
+spills_and_county <- ca_counties %>% 
+  st_join(oil_crs) 
+
+#Creating an organized and summarized set for map
+spills_per_county <- spills_and_county %>% 
+  filter(inlandmari == "Inland") %>% 
+  group_by(name) %>% 
+  summarize(spills_sum = sum(!is.na(dfgcontrol)))
+  
+#Creating the map
+ ggplot(data = spills_per_county) +
+   geom_sf(aes(fill = spills_sum), color = "white", size = 0.1) +
+   theme_void() +
+   scale_fill_gradientn(colors = c("grey61","lightsalmon4","tomato4")) +
+   labs(fill = "Spill Frequency")
+   
+   
+   
+    
+  
+```
+
