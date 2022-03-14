@@ -1,17 +1,25 @@
 ---
-title: "Untitled"
+title: "Willamette Falls Fish Passage Time Series Analysis"
 author: "Logan Ossentjuk"
-date: "3/12/2022"
 output: 
   html_document: 
     code_folding: hide
-    theme: flatly
+    theme: cerulean
 ---
-
-
-
 # Overview 
+This report visualizes data collected from Columbia Barin Research's Data Access in Real Time (DART). The data utilizes is a collection of fish passages through the Willamette Falls Fish Ladder organized by species from 2001-2010. A time series is created for Coho, Jack Coho, and Steelhead salmon to understand how their population runs have changed over time. A season plot is shown to demonstrate their differing run times. Lastly, annual counts are shown to demonstrate how population abundance  shifted over a ten year period. 
 
+![Willamette Falls, 2014. Photo by: Yuxing Zheng, Metro News](images/WillametteFalls.jpeg)
+
+
+
+![Willamette Fish Ladder, 2012. Photo by: mapking, Geocaching](images/FishLadder.jpeg){width=100%}
+
+
+**Data Citation:** DART Adult Passage Graphics & Text | Columbia Basin Research. (2012). http://www.cbr.washington.edu/dart/query/adult_graph_text
+# Findings {.tabset .tabset-fade}
+
+#### Data Preparation
 ```{r setup, include=TRUE, warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 library(tidyverse)
@@ -22,6 +30,8 @@ library(tsibble)
 library(feasts)
 library(slider)
 library(patchwork)
+library(prettydoc)
+library(paletteer)
 ```
 
 ```{r}
@@ -45,7 +55,7 @@ fish_ts <- fish_sub %>%
     species == 'steelhead' ~ 'Steelhead'))
 ```
 
-# Findings {.tabset .tabset-fade}
+
 
 ## Fish Passage Time Series
 ```{r fig.align='center'}
@@ -67,10 +77,16 @@ steelhead_ts <- ggplot(data = fish_sub, aes(x = date, y = steelhead)) +
        x= "Date")
 
 coho_ts/jack_coho_ts/steelhead_ts
+
 ```
+**Figure 1.** Original time series of Coho, Jack Coho and Steelhead salmon through the Willamette Fish Ladder from 2001 to 2010. 
 
 ### Conclusions:  
 
+- Passage is relatively consistent across this 10 year period for all species.
+- Jack Coho passages appear to be declining while Coho and Steelhead passages are increasing. 
+- 2008 Appears to be a significant year for this shift between Jack Coho and Coho.
+- Average abundance of Steelhead doubles that of Jack Coho, while Steelhead abundances became half as large as Coho in between 2008 and 2010.
 
 ## Seasonplots
 ```{r fig.align='center'}
@@ -81,15 +97,21 @@ fish_per_month <- fish_ts %>%
   mutate(year = year(month))
 
 fish_per_month %>% 
-  gg_season(y = monthly_sum) +
+gg_season(y = monthly_sum,
+          pal = paletteer_c(palette = "ggthemes::Orange-Blue Diverging", n = 10)) +
   theme_light() +
   labs(x = "Month",
        y = "Fish Passages",
        color="Year") 
 
 ```
+**Figure 2:** Seasonplot of Coho, Jack Coho and Steelhead. There is an obvious seasonality here, exhibiting niche tradeoffs. 
+
 
 ### Conclusions: 
+- Coho and Jack Coho compete for resources as their runs match up between August and November
+- Steelhead have a longer but opposite run season ranging from January to August
+- There is a key niche tradeoff here as species have shifted their spawning seasons to maximize their potential of reaching spawning grounds up river with minimal competition. 
 
 ## Annual Counts By Species: 
 
@@ -147,8 +169,15 @@ jack_coho <- ggplot(data = jack_coho, aes(x = year, y = annual_counts)) +
    #"darkslategrey", "lightgoldenrod4", "deeppink4"
   labs(x = "Year", y = "Annual Counts")
  
- (steelhead+coho+jack_coho)/p4
+ (coho+jack_coho+steelhead)/p4
 
 ```
 
+
+**Figure 3** Annual Fish Ladder Counts from 2001 to 2010. Figures are split to show individual trends as well as overall population changes over time. The relationship between Jack Coho and Coho is of particular importance here. It is also worth noting the overall decline in Steelhead. 
+
 ### Conclusions:
+- Steelhead populations have been in decline over this period but saw a signficant bounceback between 2009 and 2010. 
+- Coho saw a significant population boom between 2008 and 2010, growing by a factor of 5 over this short period
+- Jack Coho while in lower abundance have maintained a relatively consistent count across years. They also experiences a massive boom between 2008 and 2010, but it seems this returned that back to normal levels while Coho boomed above previously seen levels during this period. 
+- These trends worth following up on with further research to determine their plasticity and longevity. Especially as it relates to the competition between Coho and Jack Coho as overgrowth of Coho could competitively exclude Jack Coho. 

@@ -1,11 +1,12 @@
 ---
-title: "Assignment 4 Task - California Oil Spills In 2008"
+title: "ATask 1 - California Oil Spills In 2008"
 author: "Logan Ossentjuk"
 output: 
-  html_document:
+  html_document: 
     code_folding: hide
+    theme: cerulean
 ---
-## Overview 
+# Overview {.tabset .tabset-fade}
 This report visualizes the occurrence of oil spills within the California in 2008. Data provided by the Office of Spill Prevention and Response (OSPR) Incident Tracking Database. An interactive map is created to illustrate each individual occurrence with counties marked for orientation. The inland occurrences are then mapped onto a choropath map that demonstrates the relative frequency of occurrence by county, demarcated by a color gradient ranging from grey (low occurrence)  to brown (high occurrence). 
 
 **Data Citation:** 
@@ -14,7 +15,7 @@ Lampinen and Conway (2020) Oil Spill Incident Tracking [ds394] GIS Dataset.  htt
 
 Oil Spill Incident Tracking [ds394] | Oil Spill Incident Tracking [ds394] | California State Geoportal. (2020).  https://gis.data.ca.gov/datasets/7464e3d6f4924b50ad06e5a553d71086_0/explore?location=36.977441%2C-119.422009%2C6.43&showTable=true
 
-### Setup
+## Setup
 ```{r setup, include=TRUE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
@@ -26,8 +27,6 @@ library(sf)
 library(tmaptools)
 ```
 
-
-### Data Read In
 ```{r}
 oil_spill <- read_sf(here('data', 'Oil_Spill_Incident_Tracking_[ds394]', 'Oil_Spill_Incident_Tracking_[ds394].shp')) %>%
   clean_names()
@@ -40,7 +39,7 @@ oil_crs <- oil_spill %>%
   st_transform(3857) 
 ```
 
-### Oil Spill Occurances
+## Oil Spill Occurances
 ```{r}
 tmap_mode("view") #makes tmap interactive
 tm_shape(ca_counties) +
@@ -53,7 +52,7 @@ tm_shape(ca_counties) +
 
 **Figure 1.** Oil spill occurrences across California. Each brown dot signifies an individual occurrence. Counties shown for physical orientation. Hovering over each county will display the name and for further accuracy, zoom in to see the Open Street Map for pinpoint accuracy. 
 
-### Sum of Oils Spill Occurance Per County
+## Sum of Oils Spill Occurance Per County
 
 ```{r}
 #Making dataset for crs transformed oil and counties data 
@@ -78,12 +77,7 @@ spills_per_county <- spills_and_county %>%
     
   
 ```
-br()
+
 
 **Figure 2.** This map displays inland oil spill frequency per county. Red-brown denotes the highest sum of occurrences and grey the least. The county with the highest sum was found to be Los Angeles with 340. Alpine, Inyo, Kings and Sierra had the least with 1. 
 
-**Data Citation:** 
-
-Lampinen and Conway (2020) Oil Spill Incident Tracking [ds394] GIS Dataset.  https://map.dfg.ca.gov/metadata/ds0394.html#ID0EUGA
-
-Oil Spill Incident Tracking [ds394] | Oil Spill Incident Tracking [ds394] | California State Geoportal. (2020).  https://gis.data.ca.gov/datasets/7464e3d6f4924b50ad06e5a553d71086_0/explore?location=36.977441%2C-119.422009%2C6.43&showTable=true
